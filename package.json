@@ -4,7 +4,8 @@
   "description": "An example Webpack deployment for using TypeScript as a library",
   "main": "dist/MyLib.min.js",
   "scripts": {
-    "prepublish": "webpack --debug; webpack -p"
+    "prepublish": "webpack --debug; webpack -p",
+    "test": "mocha"
   },
   "keywords": [
     "example",
