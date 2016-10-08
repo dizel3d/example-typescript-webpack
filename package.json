@@ -14,9 +14,10 @@
   "author": "Adrian Hall <adrian@shellmonger.com>",
   "license": "MIT",
   "devDependencies": {
+    "blueimp-tmpl": "^3.4.0",
     "chai": "^3.5.0",
     "mocha": "^3.1.0",
-    "ts-loader": "^0.8.1",
+    "ts-loader": "0.8.1",
     "tslint": "^3.5.0",
     "tslint-loader": "^2.1.0",
     "typescript": "^2.0.3",

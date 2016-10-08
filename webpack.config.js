@@ -13,10 +13,14 @@ if (yargs.argv.p) {
   outputFile = libraryName + '.js';
 }
 
+plugins.push(
+    new TemplatePlugin('index.d.ts.tpl', libraryName + '.d.ts'),
+    new SkipAssets(new RegExp('^(?!' + libraryName + ')'))
+);
+
 var config = {
-  entry: [
-    __dirname + '/src/TestClass.ts'
-  ],
+  context: path.join(__dirname, 'src'),
+  entry: './TestClass.ts',
   devtool: 'source-map',
   output: {
     path: path.join(__dirname, '/dist'),
@@ -47,3 +51,60 @@ var config = {
 };
 
 module.exports = config;
+
+/**
+ * Webpack plugin to remove unnecessary assets
+ * @param {RegExp} assetsRegex regular expression that matches unnecessary assets
+ * @constructor
+ */
+function SkipAssets(assetsRegex) {
+    this.apply = function(compiler) {
+        compiler.plugin('emit', function(compilation, callback) {
+            Object.keys(compilation.assets).forEach(function(name) {
+                if (name.match(assetsRegex)) {
+                    delete compilation.assets[name];
+                }
+            });
+            callback();
+        });
+    }
+}
+
+/**
+ * Webpack plugin to create an asset from a template file *.tpl
+ * @param {string} [inFilename] template filename, `outFilename` by default
+ * @param {string} outFilename output filename
+ * @constructor
+ */
+function TemplatePlugin(inFilename, outFilename) {
+    if (!outFilename) {
+        outFilename = inFilename;
+        inFilename = inFilename + '.tpl';
+    }
+    var tmpl = require('blueimp-tmpl');
+    var fs = require('fs');
+
+    this.apply = function(compiler) {
+        compiler.plugin('emit', function(compilation, callback) {
+            var tplFilename = path.join(compiler.context, inFilename);
+            fs.readFile(tplFilename, 'utf8', function(err, data) {
+                if (err) {
+                    return callback(err);
+                }
+                var source = tmpl(data, {
+                    compiler: compiler,
+                    compilation: compilation
+                });
+                compilation.assets[outFilename] = {
+                    source: function() {
+                        return source;
+                    },
+                    size: function() {
+                        return source.length;
+                    }
+                };
+                callback();
+            });
+        });
+    };
+}
